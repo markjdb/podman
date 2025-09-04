@@ -5,6 +5,7 @@ package libpod
 import (
 	"fmt"
 	"math"
+	"os/exec"
 	"time"
 
 	"github.com/containers/podman/v5/libpod/define"
@@ -23,6 +24,11 @@ func (c *Container) getPlatformContainerStats(stats *define.ContainerStats, prev
 	jailName, err := c.jailName()
 	if err != nil {
 		return fmt.Errorf("getting jail name: %w", err)
+	}
+
+	jail := exec.Command("jail", "-j", jailName)
+	if err = jail.Run(); err != nil {
+		return fmt.Errorf("jail %s does not exist", jailName)
 	}
 
 	entries, err := rctl.GetRacct("jail:" + jailName)
