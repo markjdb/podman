@@ -3,6 +3,7 @@
 package compat
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/containers/podman/v5/libpod"
@@ -22,6 +23,14 @@ func getPreCPUStats(stats *define.ContainerStats) CPUStats {
 }
 
 func statsContainerJSON(ctnr *libpod.Container, stats *define.ContainerStats, preCPUStats CPUStats, onlineCPUs int) (StatsJSON, error) {
+	state, err := ctnr.State()
+	if err != nil {
+		return StatsJSON{}, err
+	}
+	if state != define.ContainerStateRunning {
+		return StatsJSON{}, fmt.Errorf("container %s is not running", ctnr.ID())
+	}
+
 	return StatsJSON{
 		Stats: Stats{
 			Read: time.Now(),
